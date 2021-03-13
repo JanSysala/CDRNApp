@@ -7,10 +7,13 @@ import useColorScheme from './hooks/useColorScheme';
 import Navigation from './navigation';
 import {ApolloProvider} from "@apollo/react-hooks";
 import {ApolloClient, InMemoryCache} from '@apollo/client';
+import {StoreProvider} from "./contexts/Store";
+
 
 export default function App() {
     const isLoadingComplete = useCachedResources();
     const colorScheme = useColorScheme();
+
 
     const client = new ApolloClient({
         uri: "http://localhost:9000/api",
@@ -21,13 +24,14 @@ export default function App() {
         return null;
     } else {
         return (
-            <ApolloProvider client={client}>
-                <SafeAreaProvider>
-                    <Navigation colorScheme={colorScheme}/>
-                    <StatusBar/>
-                </SafeAreaProvider>
-            </ApolloProvider>
-
+            <StoreProvider>
+                <ApolloProvider client={client}>
+                    <SafeAreaProvider>
+                        <Navigation colorScheme={colorScheme}/>
+                        <StatusBar/>
+                    </SafeAreaProvider>
+                </ApolloProvider>
+            </StoreProvider>
         );
     }
 }

@@ -11,7 +11,7 @@ import {Store} from "../contexts/Store";
 
 
 export default function TabOneScreen() {
-    const {dispatch} = useContext(Store);
+    const {dispatch, state} = useContext(Store);
     const [addInstrument] = useMutation(ADD_INSTRUMENT);
     const [item, setItem] = useState('');
     const {data, loading, error, refetch} = useQuery<InstrumentsData>(GET_INSTRUMENTS);
@@ -48,9 +48,8 @@ export default function TabOneScreen() {
                         </View>
                     </TouchableHighlight>
                 )}
-
-                // renderItem={({item}) => <Text style={styles.item}>{item.ticker}</Text>}                keyExtractor={instrumentItem => instrumentItem?.id}
             />
+            <Text>{JSON.stringify(state?.sectorExposure)}</Text>
             <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)"/>
             <EditScreenInfo path="/screens/TabOneScreen.tsx"/>
         </View>

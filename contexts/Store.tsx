@@ -24,8 +24,6 @@ function reducer(state: EtfsState, action: IAction): EtfsState {
     switch (action.type) {
         case GET_ETFINDUSTRIES:
             return { ...state, ...action.payload }
-        case GET_ETFSYMBOLS:
-            return { ...state, etfSymbols: action.payload }
         default:
             return state;
     }

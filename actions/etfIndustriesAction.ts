@@ -2,6 +2,7 @@ import axios from 'axios'
 import {GET_ETFINDUSTRIES} from "./actionTypes";
 import React from "react";
 import {GetEtfSectorResponse} from "../models/etfSectorExposure";
+// @ts-ignore
 import {REACT_APP_FINNHUB_API_TOKEN} from "@env"
 
 
