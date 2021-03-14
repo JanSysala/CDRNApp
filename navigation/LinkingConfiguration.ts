@@ -6,14 +6,9 @@ export default {
     screens: {
       Root: {
         screens: {
-          TabOne: {
+          Etfs: {
             screens: {
-              TabOneScreen: 'one',
-            },
-          },
-          TabTwo: {
-            screens: {
-              TabTwoScreen: 'two',
+              Exposure: 'etfs',
             },
           },
         },

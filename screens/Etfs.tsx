@@ -1,25 +1,23 @@
 import * as React from 'react';
-import {Button, Dimensions, FlatList, StyleSheet, TextInput, TouchableHighlight} from 'react-native';
-import {useMutation, useQuery} from "@apollo/react-hooks";
-import {Text, View} from '../components/Themed';
-import {useCallback, useContext, useState} from "react";
-import {ADD_INSTRUMENT, DELETE_INSTRUMENT, GET_INSTRUMENTS} from "../graphql/portfolioInstruments";
-import {Instruments as InstrumentsData} from "../graphql/__generated__/Instruments";
-import {getEtfIndustries} from "../actions/etfIndustriesAction";
-import {Store} from "../contexts/Store";
-import {Axis, Chart, Coordinate, Interval, Tooltip} from 'bizcharts';
+import { Button, Dimensions, FlatList, StyleSheet, TextInput, TouchableHighlight } from 'react-native';
+import { useMutation, useQuery } from "@apollo/react-hooks";
+import { Text, View } from '../components/Themed';
+import { useCallback, useContext, useState } from "react";
+import { ADD_INSTRUMENT, DELETE_INSTRUMENT, GET_INSTRUMENTS } from "../graphql/portfolioInstruments";
+import { Instruments as InstrumentsData } from "../graphql/__generated__/Instruments";
+import { getEtfIndustries } from "../actions/etfIndustriesAction";
+import { Store } from "../contexts/Store";
+import { Axis, Chart, Coordinate, Interval, Tooltip } from 'bizcharts';
 import {
     DeleteInstrumentVariables, DeleteInstrument as DeleteInstrumentData,
 } from "../graphql/__generated__/DeleteInstrument";
 
 
 export default function TabOneScreen() {
-    const {dispatch, state} = useContext(Store);
+    const { dispatch, state } = useContext(Store);
     const [addInstrument] = useMutation(ADD_INSTRUMENT);
     const [item, setItem] = useState('');
-    const {data, loading, error, refetch} = useQuery<InstrumentsData>(GET_INSTRUMENTS);
-
-    const screenWidth = Dimensions.get("window").width;
+    const { data, loading, error, refetch } = useQuery<InstrumentsData>(GET_INSTRUMENTS);
 
     const chartCols = {
         percent: {
@@ -31,20 +29,20 @@ export default function TabOneScreen() {
     };
     const [
         deleteInstrument,
-        {loading: deleteInstrumentLoading, error: deleteInstrumentError}
+        { loading: deleteInstrumentLoading, error: deleteInstrumentError }
     ] = useMutation<DeleteInstrumentData, DeleteInstrumentVariables>(DELETE_INSTRUMENT);
 
     const instruments = data ? data.instruments : null;
     const handleSubmit = useCallback(async () => {
         await addInstrument({
-            variables: {ticker: item}
+            variables: { ticker: item }
         })
         setItem('');
         await refetch();
     }, [addInstrument, item]);
 
     const handleDeleteInstrument = useCallback(async (id: DeleteInstrumentVariables['id']) => {
-        await deleteInstrument({variables: {id}})
+        await deleteInstrument({ variables: { id } })
         await refetch();
     }, [deleteInstrument, refetch]);
 
@@ -62,12 +60,12 @@ export default function TabOneScreen() {
             />
             <FlatList
                 data={instruments}
-                renderItem={({item, index, separators}) => (
+                renderItem={({ item }) => (
                     <TouchableHighlight
                         key={item.id}
                         onPress={() => getEtfIndustries(item.ticker, dispatch)}>
-                        <View style={{backgroundColor: 'white'}}>
-                            <Text>{item.ticker}</Text>
+                        <View style={styles.row}>
+                            <Text style={styles.listItem}>{item.ticker}</Text>
                             <Button
                                 onPress={() => handleDeleteInstrument(item.id)}
                                 title="x"
@@ -82,9 +80,9 @@ export default function TabOneScreen() {
                     scale={chartCols}
                     data={state.sectorExposure}
                     autoFit>
-                    <Coordinate type="theta" radius={0.75}/>
-                    <Tooltip showTitle={false}/>
-                    <Axis visible={false}/>
+                    <Coordinate type="theta" radius={0.75} />
+                    <Tooltip showTitle={false} />
+                    <Axis visible={false} />
                     <Interval
                         position="exposure"
                         adjust="stack"
@@ -106,6 +104,15 @@ const styles = StyleSheet.create({
         marginVertical: 8,
         marginHorizontal: 16,
     },
+    row: {
+        flexDirection: 'row',
+    },
+    listItem: {
+        paddingRight: 5,
+        paddingTop: 7,
+        textAlignVertical: "center",
+        textAlign: "center"
+    },
     input: {
         height: 40,
         margin: 12,
@@ -115,10 +122,6 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: 'bold',
     },
     separator: {
         marginVertical: 30,
