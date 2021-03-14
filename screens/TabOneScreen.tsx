@@ -1,13 +1,16 @@
 import * as React from 'react';
-import {Button, FlatList, StyleSheet, TextInput, TouchableHighlight} from 'react-native';
+import {Button, Dimensions, FlatList, StyleSheet, TextInput, TouchableHighlight} from 'react-native';
 import {useMutation, useQuery} from "@apollo/react-hooks";
-import EditScreenInfo from '../components/EditScreenInfo';
 import {Text, View} from '../components/Themed';
 import {useCallback, useContext, useState} from "react";
-import {ADD_INSTRUMENT, GET_INSTRUMENTS} from "../graphql/portfolioInstruments";import {Instruments as InstrumentsData} from "../graphql/__generated__/Instruments";
+import {ADD_INSTRUMENT, DELETE_INSTRUMENT, GET_INSTRUMENTS} from "../graphql/portfolioInstruments";
+import {Instruments as InstrumentsData} from "../graphql/__generated__/Instruments";
 import {getEtfIndustries} from "../actions/etfIndustriesAction";
 import {Store} from "../contexts/Store";
-
+import {Axis, Chart, Coordinate, Interval, Tooltip} from 'bizcharts';
+import {
+    DeleteInstrumentVariables, DeleteInstrument as DeleteInstrumentData,
+} from "../graphql/__generated__/DeleteInstrument";
 
 
 export default function TabOneScreen() {
@@ -15,6 +18,21 @@ export default function TabOneScreen() {
     const [addInstrument] = useMutation(ADD_INSTRUMENT);
     const [item, setItem] = useState('');
     const {data, loading, error, refetch} = useQuery<InstrumentsData>(GET_INSTRUMENTS);
+
+    const screenWidth = Dimensions.get("window").width;
+
+    const chartCols = {
+        percent: {
+            formatter: (val: any) => {
+                val = val * 100 + '%';
+                return val;
+            },
+        },
+    };
+    const [
+        deleteInstrument,
+        {loading: deleteInstrumentLoading, error: deleteInstrumentError}
+    ] = useMutation<DeleteInstrumentData, DeleteInstrumentVariables>(DELETE_INSTRUMENT);
 
     const instruments = data ? data.instruments : null;
     const handleSubmit = useCallback(async () => {
@@ -24,6 +42,11 @@ export default function TabOneScreen() {
         setItem('');
         await refetch();
     }, [addInstrument, item]);
+
+    const handleDeleteInstrument = useCallback(async (id: DeleteInstrumentVariables['id']) => {
+        await deleteInstrument({variables: {id}})
+        await refetch();
+    }, [deleteInstrument, refetch]);
 
     return (
         <View style={styles.container}>
@@ -35,23 +58,43 @@ export default function TabOneScreen() {
             />
             <Button
                 title="Add"
-                onPress={handleSubmit}>
-            </Button>
+                onPress={handleSubmit}
+            />
             <FlatList
                 data={instruments}
-                renderItem={({ item, index, separators }) => (
+                renderItem={({item, index, separators}) => (
                     <TouchableHighlight
                         key={item.id}
                         onPress={() => getEtfIndustries(item.ticker, dispatch)}>
-                        <View style={{ backgroundColor: 'white' }}>
+                        <View style={{backgroundColor: 'white'}}>
                             <Text>{item.ticker}</Text>
+                            <Button
+                                onPress={() => handleDeleteInstrument(item.id)}
+                                title="x"
+                            />
                         </View>
                     </TouchableHighlight>
                 )}
             />
-            <Text>{JSON.stringify(state?.sectorExposure)}</Text>
-            <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)"/>
-            <EditScreenInfo path="/screens/TabOneScreen.tsx"/>
+            {state?.sectorExposure?.length > 2 ?
+                <Chart
+                    height={400}
+                    scale={chartCols}
+                    data={state.sectorExposure}
+                    autoFit>
+                    <Coordinate type="theta" radius={0.75}/>
+                    <Tooltip showTitle={false}/>
+                    <Axis visible={false}/>
+                    <Interval
+                        position="exposure"
+                        adjust="stack"
+                        color="industry"
+                        style={{
+                            lineWidth: 1,
+                            stroke: '#fff',
+                        }}
+                    />
+                </Chart> : null}
         </View>
     );
 }
